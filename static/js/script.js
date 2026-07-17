@@ -42,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // State Tracking
     let uploadedFile = null;
     let qrImageDataUrl = null;
+    let currentAbortController = null;
+    let lastSerializedData = '';
     
     // Define Color Presets
     const presets = {
@@ -60,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* --- Preset Selection --- */
     presetBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remove active class from all
             presetBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateHexLabel(backPicker);
                 toggleGradientGroup();
                 
-                // Trigger dynamic preview refresh if URL is populated
+                // Trigger preview refresh if URL is populated
                 if (urlInput.value.trim() !== '') {
                     generateQRCode();
                 }
@@ -235,10 +236,35 @@ document.addEventListener('DOMContentLoaded', () => {
     /* --- Form Submission & Generation --- */
     form.addEventListener('submit', (e) => {
         e.preventDefault();
+        const url = urlInput.value.trim();
+        if (!url) {
+            showToast('Target URL is required', 'error');
+            urlInput.focus();
+            return;
+        }
         generateQRCode();
     });
 
-    // Debounce function to prevent overlapping fetch requests on fast slider changes
+    // Dynamic generation as URL is typed
+    urlInput.addEventListener('input', () => {
+        if (urlInput.value.trim() === '') {
+            resetPreview();
+            lastSerializedData = '';
+        } else {
+            debounceGenerate();
+        }
+    });
+
+    // Reset preview to placeholder and disable buttons
+    function resetPreview() {
+        qrImageDataUrl = null;
+        qrPreviewImg.src = '';
+        placeholderState.classList.remove('hidden');
+        imageState.classList.add('hidden');
+        actionControls.classList.add('disabled-state');
+    }
+
+    // Debounce function to prevent overlapping fetch requests on fast input changes
     let debounceTimer;
     function debounceGenerate() {
         clearTimeout(debounceTimer);
@@ -247,16 +273,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     }
 
+    // Serialize all setting inputs to prevent duplicate rendering when values didn't change
+    function getSerializedFormSettings() {
+        const logoName = uploadedFile ? uploadedFile.name : (logoInput.files.length > 0 ? logoInput.files[0].name : '');
+        return [
+            urlInput.value.trim(),
+            fillPicker.value,
+            backPicker.value,
+            gradientType.value,
+            gradientPicker.value,
+            logoSizeSlider.value,
+            borderSlider.value,
+            document.getElementById('logo_shape').value,
+            document.getElementById('module_style').value,
+            document.getElementById('eye_style').value,
+            document.getElementById('error_correction').value,
+            document.getElementById('output_size').value,
+            document.getElementById('logo_border').checked,
+            document.getElementById('logo_shadow').checked,
+            document.getElementById('transparent_background').checked,
+            logoName
+        ].join('|');
+    }
+
     // Ajax call to Flask backend API
-    async function generateQRCode() {
+    async function generateQRCode(isDownload = false) {
         const url = urlInput.value.trim();
         if (!url) {
-            showToast('Target URL is required', 'error');
-            urlInput.focus();
-            return;
+            resetPreview();
+            return null;
+        }
+
+        // Lazy updates logic: skip rendering if settings haven't changed
+        const serialized = getSerializedFormSettings();
+        if (!isDownload && serialized === lastSerializedData) {
+            return null;
+        }
+        if (!isDownload) {
+            lastSerializedData = serialized;
         }
 
         // Show loading state
+        if (isDownload) {
+            previewLoader.querySelector('.loader-text').textContent = 'Preparing High-Res Download...';
+        } else {
+            previewLoader.querySelector('.loader-text').textContent = 'Generating QR...';
+        }
         previewLoader.classList.remove('hidden');
         document.getElementById('generate-btn').disabled = true;
         document.querySelector('.btn-spinner').classList.remove('hidden');
@@ -273,11 +335,19 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('logo_border', document.getElementById('logo_border').checked ? 'true' : 'false');
         formData.append('logo_shadow', document.getElementById('logo_shadow').checked ? 'true' : 'false');
         formData.append('border_size', borderSlider.value);
-        formData.append('output_size', document.getElementById('output_size').value);
         formData.append('error_correction', document.getElementById('error_correction').value);
         formData.append('transparent_background', document.getElementById('transparent_background').checked ? 'true' : 'false');
         formData.append('gradient_type', gradientType.value);
         formData.append('gradient_color', gradientPicker.value);
+        
+        const activePreset = document.querySelector('.preset-btn.active');
+        if (activePreset) {
+            formData.append('preset', activePreset.getAttribute('data-preset'));
+        }
+
+        // Optimize Preview (512px) vs High-Res Download (User dropdown value)
+        const sizeSelected = document.getElementById('output_size').value;
+        formData.append('output_size', isDownload ? sizeSelected : '512');
 
         if (uploadedFile) {
             formData.append('logo', uploadedFile);
@@ -286,27 +356,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // Cancel previous request if running (Prevent duplicate requests)
+            if (currentAbortController) {
+                currentAbortController.abort();
+            }
+            currentAbortController = new AbortController();
+            const signal = currentAbortController.signal;
+
             const response = await fetch('/generate', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: signal
             });
 
             const data = await response.json();
 
             if (data.success && data.qr_data_url) {
-                qrImageDataUrl = data.qr_data_url;
-                qrPreviewImg.src = data.qr_data_url;
-                
-                // Toggle preview displays
-                placeholderState.classList.add('hidden');
-                imageState.classList.remove('hidden');
-                actionControls.classList.remove('disabled-state');
-                
-                showToast('QR Code generated successfully!');
+                if (isDownload) {
+                    return data;
+                } else {
+                    qrImageDataUrl = data.qr_data_url;
+                    qrPreviewImg.src = data.qr_data_url;
+                    
+                    // Toggle preview displays
+                    placeholderState.classList.add('hidden');
+                    imageState.classList.remove('hidden');
+                    actionControls.classList.remove('disabled-state');
+                }
             } else {
-                showToast(data.error || 'Failed to generate QR Code', 'error');
+                showToast(data.message || 'Failed to generate QR Code', 'error');
             }
         } catch (error) {
+            if (error.name === 'AbortError') {
+                return null;
+            }
             console.error('Error:', error);
             showToast('Connection to server failed', 'error');
         } finally {
@@ -315,28 +398,29 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('generate-btn').disabled = false;
             document.querySelector('.btn-spinner').classList.add('hidden');
         }
+        return null;
     }
 
     /* --- Download and Copy Actions --- */
-    downloadPngBtn.addEventListener('click', () => {
-        if (!qrImageDataUrl) return;
+    downloadPngBtn.addEventListener('click', async () => {
+        if (!urlInput.value.trim()) return;
         
-        // Create dynamic anchor link to download base64 content
-        const link = document.createElement('a');
-        link.href = qrImageDataUrl;
-        
-        // Setup simple descriptive filename based on URL domain
-        let domain = 'qr_code';
         try {
-            const urlObj = new URL(urlInput.value);
-            domain = urlObj.hostname.replace('www.', '').split('.')[0];
-        } catch (e) {}
-        
-        link.download = `${domain}_qr.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast('PNG Downloaded!');
+            // Generate the high-res QR code on-demand based on selected dropdown size
+            const data = await generateQRCode(true);
+            if (data && data.qr_data_url) {
+                const link = document.createElement('a');
+                link.href = data.qr_data_url;
+                link.download = data.filename || 'qr_code.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast('PNG Downloaded!');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Download failed', 'error');
+        }
     });
 
     copyImgBtn.addEventListener('click', async () => {
@@ -356,7 +440,88 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Copied to clipboard!');
         } catch (err) {
             console.error('Copy failed:', err);
-            showToast('Failed to copy to clipboard', 'error');
+            showToast('Clipboard copy not supported or failed', 'error');
+        }
+    });
+
+    // Form Reset Button
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            form.reset();
+            
+            updateHexLabel(fillPicker);
+            updateHexLabel(backPicker);
+            updateHexLabel(gradientPicker);
+            toggleGradientGroup();
+            
+            uploadedFile = null;
+            logoInput.value = '';
+            logoPreviewContainer.classList.add('hidden');
+            dropZone.classList.remove('hidden');
+            
+            logoSizeVal.textContent = `${logoSizeSlider.value}%`;
+            borderSizeVal.textContent = borderSlider.value;
+            
+            presetBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-preset="custom"]').classList.add('active');
+            
+            resetPreview();
+            lastSerializedData = '';
+            
+            showToast('Form reset to default settings');
+        });
+    }
+
+    /* --- Theme Toggle Switch --- */
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    
+    // System Theme Preference Detection
+    function getSystemThemePreference() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 'light';
+        }
+        return 'dark';
+    }
+
+    // Load saved theme preference (default to system theme if none saved)
+    const savedTheme = localStorage.getItem('theme') || getSystemThemePreference();
+    setTheme(savedTheme);
+
+    function setTheme(theme) {
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+    
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'light') {
+            setTheme('dark');
+            showToast('Switched to Dark Theme');
+        } else {
+            setTheme('light');
+            showToast('Switched to Light Theme');
+        }
+    });
+
+    /* --- Keyboard Shortcuts --- */
+    document.addEventListener('keydown', (e) => {
+        // Ctrl + Enter: Generate QR code
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            generateQRCode();
+        }
+        // Ctrl + D: Download QR code
+        if (e.ctrlKey && e.key === 'd' && qrImageDataUrl) {
+            e.preventDefault();
+            downloadPngBtn.click();
         }
     });
 
@@ -378,7 +543,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         toast.classList.remove('hidden');
         
-        // Slide out after 3 seconds
         clearTimeout(toast.timer);
         toast.timer = setTimeout(() => {
             toast.classList.add('hidden');

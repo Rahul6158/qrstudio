@@ -2,6 +2,7 @@
 
 /* Design Tokens & Root Customizations */
 :root {
+    color-scheme: dark;
     --bg-color: #090D1A;
     --text-primary: #F3F4F6;
     --text-secondary: #9CA3AF;
@@ -219,6 +220,11 @@ input[type="url"]:focus, select:focus {
     border-color: var(--card-border-focus);
     background-color: rgba(255, 255, 255, 0.06);
     box-shadow: 0 0 12px var(--primary-glow);
+}
+
+select option {
+    background-color: #090D1A;
+    color: #F3F4F6;
 }
 
 /* Preset Buttons */
@@ -856,4 +862,209 @@ input[type="range"]::-webkit-slider-thumb:hover {
 @keyframes fadeIn {
     0% { opacity: 0; }
     100% { opacity: 1; }
+}
+
+/* Floating Theme Toggle in Top-Right Corner */
+.theme-toggle-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.25rem;
+    transition: var(--transition-smooth);
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    z-index: 100;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+    transform: scale(1.1) rotate(15deg);
+}
+
+.theme-toggle-btn i {
+    transition: transform 0.4s ease;
+}
+
+.theme-toggle-btn:hover i {
+    transform: rotate(-15deg);
+}
+
+/* Form Actions Row (Generate + Reset) */
+.form-actions-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.form-actions-row .primary-btn {
+    flex: 3;
+    margin-top: 0;
+}
+
+.secondary-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: var(--transition-smooth);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* --- LIGHT MODE OVERRIDES --- */
+:root[data-theme="light"] {
+    color-scheme: light;
+    --bg-color: #F3F4F6;
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --primary-glow: rgba(37, 99, 235, 0.15);
+    
+    --accent: #EA580C;
+    --accent-glow: rgba(234, 88, 12, 0.15);
+    
+    --card-bg: #FFFFFF;
+    --card-bg-hover: rgba(255, 255, 255, 0.95);
+    --card-border: #D1D5DB;
+    --card-border-focus: rgba(37, 99, 235, 0.4);
+    
+    --input-bg: #F9FAFB;
+    --input-border: #D1D5DB;
+}
+
+:root[data-theme="light"] #app-title {
+    background: linear-gradient(to right, #0F172A, #334155) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+:root[data-theme="light"] .theme-toggle-btn {
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .theme-toggle-btn:hover {
+    background: #F1F5F9;
+    border-color: var(--primary);
+}
+
+:root[data-theme="light"] .secondary-btn {
+    background: #FFFFFF;
+    border-color: #D1D5DB;
+}
+
+:root[data-theme="light"] .secondary-btn:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+:root[data-theme="light"] .preset-btn {
+    background: rgba(15, 23, 42, 0.03);
+    color: var(--text-secondary);
+    border-color: rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme="light"] .preset-btn:hover {
+    background: rgba(15, 23, 42, 0.06);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .preset-btn.active {
+    background: var(--primary);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+:root[data-theme="light"] .color-picker-wrapper {
+    background: #FFFFFF;
+}
+
+:root[data-theme="light"] .drag-drop-zone {
+    border-color: #D1D5DB;
+    background: #F9FAFB;
+}
+
+:root[data-theme="light"] .drag-drop-zone:hover, 
+:root[data-theme="light"] .drag-drop-zone.dragover {
+    background: rgba(37, 99, 235, 0.03);
+}
+
+:root[data-theme="light"] .logo-preview-box {
+    background: #F9FAFB;
+}
+
+:root[data-theme="light"] .form-accordion {
+    border-color: #E5E7EB;
+}
+
+:root[data-theme="light"] .preview-box {
+    background: #F9FAFB;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="light"] .copy-btn {
+    background: #FFFFFF;
+    border-color: #D1D5DB;
+}
+
+:root[data-theme="light"] .copy-btn:hover {
+    background: #F3F4F6;
+    border-color: #9CA3AF;
+}
+
+:root[data-theme="light"] input[type="range"] {
+    background: #E5E7EB;
+}
+
+:root[data-theme="light"] .toggle-checkbox input[type="checkbox"] {
+    background: #E5E7EB;
+}
+
+:root[data-theme="light"] .toggle-checkbox input[type="checkbox"]:checked {
+    background: var(--success);
+}
+
+:root[data-theme="light"] .accordion-toggle {
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .glass-card {
+    box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="light"] .blob {
+    opacity: 0.05;
+}
+
+:root[data-theme="light"] select option {
+    background-color: #FFFFFF;
+    color: #1F2937;
 }

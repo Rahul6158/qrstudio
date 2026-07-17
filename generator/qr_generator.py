@@ -69,22 +69,28 @@ def get_color_mask(gradient_type, back_rgb, fill_rgb, gradient_rgb):
 def process_logo(logo_img, size, shape, has_border, has_shadow):
     """
     Processes logo to be a square of size x size with requested shape, border, and drop shadow.
+    Uses high-quality supersampling for smooth anti-aliased borders and shapes.
     """
-    # Force logo to be a square
+    scale = 4
+    
+    # Force logo to be a square and convert to RGBA
     logo = logo_img.convert("RGBA")
     logo = ImageOps.fit(logo, (size, size), Image.Resampling.LANCZOS)
     
-    # Create mask for the shape
-    mask = Image.new("L", (size, size), 0)
-    mask_draw = ImageDraw.Draw(mask)
+    # Create mask for the shape (supersampled for anti-aliasing)
+    mask_size = size * scale
+    mask_large = Image.new("L", (mask_size, mask_size), 0)
+    mask_draw_large = ImageDraw.Draw(mask_large)
     
     if shape == 'circle':
-        mask_draw.ellipse((0, 0, size, size), fill=255)
+        mask_draw_large.ellipse((0, 0, mask_size, mask_size), fill=255)
     elif shape == 'rounded_square':
-        radius = int(size * 0.25)
-        mask_draw.rounded_rectangle((0, 0, size, size), radius=radius, fill=255)
+        radius = int(mask_size * 0.25)
+        mask_draw_large.rounded_rectangle((0, 0, mask_size, mask_size), radius=radius, fill=255)
     else:  # square
-        mask_draw.rectangle((0, 0, size, size), fill=255)
+        mask_draw_large.rectangle((0, 0, mask_size, mask_size), fill=255)
+        
+    mask = mask_large.resize((size, size), Image.Resampling.LANCZOS)
         
     # Crop logo using mask
     logo_cropped = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -94,19 +100,24 @@ def process_logo(logo_img, size, shape, has_border, has_shadow):
     padding = 6 if has_border else 0
     container_size = size + padding * 2
     
-    # Create container image (transparent)
-    container = Image.new("RGBA", (container_size, container_size), (0, 0, 0, 0))
-    container_draw = ImageDraw.Draw(container)
-    
+    # Create container image (transparent) with anti-aliased white border if requested
     if has_border:
+        container_size_scaled = container_size * scale
+        container_large = Image.new("RGBA", (container_size_scaled, container_size_scaled), (0, 0, 0, 0))
+        container_draw_large = ImageDraw.Draw(container_large)
+        
         if shape == 'circle':
-            container_draw.ellipse((0, 0, container_size, container_size), fill=(255, 255, 255, 255))
+            container_draw_large.ellipse((0, 0, container_size_scaled, container_size_scaled), fill=(255, 255, 255, 255))
         elif shape == 'rounded_square':
-            radius = int(container_size * 0.25)
-            container_draw.rounded_rectangle((0, 0, container_size, container_size), radius=radius, fill=(255, 255, 255, 255))
+            radius = int(container_size_scaled * 0.25)
+            container_draw_large.rounded_rectangle((0, 0, container_size_scaled, container_size_scaled), radius=radius, fill=(255, 255, 255, 255))
         else:  # square
-            container_draw.rectangle((0, 0, container_size, container_size), fill=(255, 255, 255, 255))
+            container_draw_large.rectangle((0, 0, container_size_scaled, container_size_scaled), fill=(255, 255, 255, 255))
             
+        container = container_large.resize((container_size, container_size), Image.Resampling.LANCZOS)
+    else:
+        container = Image.new("RGBA", (container_size, container_size), (0, 0, 0, 0))
+        
     # Paste logo in center of container
     container.paste(logo_cropped, (padding, padding), mask=logo_cropped)
     
@@ -116,25 +127,31 @@ def process_logo(logo_img, size, shape, has_border, has_shadow):
         shadow_blur = 6
         shadow_size = container_size + shadow_blur * 2
         
+        shadow_size_scaled = shadow_size * scale
+        shadow_blur_scaled = shadow_blur * scale
+        shadow_offset_scaled = shadow_offset * scale
+        container_size_scaled = container_size * scale
+        
         # Create a shadow canvas
-        shadow_canvas = Image.new("RGBA", (shadow_size, shadow_size), (0, 0, 0, 0))
-        shadow_draw = ImageDraw.Draw(shadow_canvas)
+        shadow_canvas_large = Image.new("RGBA", (shadow_size_scaled, shadow_size_scaled), (0, 0, 0, 0))
+        shadow_draw_large = ImageDraw.Draw(shadow_canvas_large)
         
         # Draw the shadow shape (black with opacity)
         shadow_color = (0, 0, 0, 100) # Semi-transparent black
-        shadow_shape_pos = (shadow_blur + shadow_offset, shadow_blur + shadow_offset, 
-                            shadow_blur + shadow_offset + container_size, shadow_blur + shadow_offset + container_size)
+        shadow_shape_pos = (shadow_blur_scaled + shadow_offset_scaled, shadow_blur_scaled + shadow_offset_scaled, 
+                            shadow_blur_scaled + shadow_offset_scaled + container_size_scaled, shadow_blur_scaled + shadow_offset_scaled + container_size_scaled)
         
         if shape == 'circle':
-            shadow_draw.ellipse(shadow_shape_pos, fill=shadow_color)
+            shadow_draw_large.ellipse(shadow_shape_pos, fill=shadow_color)
         elif shape == 'rounded_square':
-            radius = int(container_size * 0.25)
-            shadow_draw.rounded_rectangle(shadow_shape_pos, radius=radius, fill=shadow_color)
+            radius = int(container_size_scaled * 0.25)
+            shadow_draw_large.rounded_rectangle(shadow_shape_pos, radius=radius, fill=shadow_color)
         else:  # square
-            shadow_draw.rectangle(shadow_shape_pos, fill=shadow_color)
+            shadow_draw_large.rectangle(shadow_shape_pos, fill=shadow_color)
             
         # Blur the shadow
-        shadow_canvas = shadow_canvas.filter(ImageFilter.GaussianBlur(shadow_blur))
+        shadow_canvas_large = shadow_canvas_large.filter(ImageFilter.GaussianBlur(shadow_blur_scaled))
+        shadow_canvas = shadow_canvas_large.resize((shadow_size, shadow_size), Image.Resampling.LANCZOS)
         
         # Paste container onto shadow canvas
         shadow_canvas.paste(container, (shadow_blur, shadow_blur), mask=container)
@@ -160,6 +177,33 @@ def generate_qr_code(
     gradient_type="solid",
     gradient_color="#3B82F6"
 ):
+    # 1. Validation
+    if not url or not url.strip():
+        raise ValueError("URL cannot be empty.")
+        
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        raise ValueError("Invalid target URL. Make sure it starts with http:// or https://")
+        
+    if logo_file:
+        try:
+            # We open the image and run verify() to check for corruption
+            if isinstance(logo_file, str):
+                logo_img = Image.open(logo_file)
+            else:
+                logo_img = Image.open(logo_file)
+            logo_img.verify()
+            
+            # Reopen the file since verify() invalidates the file pointer/stream
+            if isinstance(logo_file, str):
+                logo_img = Image.open(logo_file)
+            else:
+                logo_file.seek(0)
+                logo_img = Image.open(logo_file)
+        except Exception:
+            raise ValueError("Corrupted or unsupported logo image format.")
+            
     # Determine error correction level
     ec_levels = {
         'L': qrcode.constants.ERROR_CORRECT_L,
@@ -199,14 +243,33 @@ def generate_qr_code(
     
     qr_width, qr_height = qr_img.size
     
-    # Embed logo if provided
+    # 2. Key out background color first (if transparent background is enabled)
+    # This ensures that any background-matching colors inside the logo are NOT keyed out later!
+    if transparent_background:
+        qr_img = qr_img.convert("RGBA")
+        datas = qr_img.getdata()
+        newData = []
+        for item in datas:
+            # If the pixel matches the background color exactly, make it transparent
+            if item[0:3] == back_rgb:
+                newData.append((0, 0, 0, 0))
+            else:
+                newData.append(item)
+        qr_img.putdata(newData)
+        
+    # 3. Embed logo if provided
     if logo_file:
         try:
-            # Load the logo image
+            # Reopen logo image
             if isinstance(logo_file, str):
                 logo_img = Image.open(logo_file)
             else:
+                logo_file.seek(0)
                 logo_img = Image.open(logo_file)
+                
+            # Validate logo size bounds
+            if logo_size_pct < 10 or logo_size_pct > 30:
+                logo_size_pct = 20
                 
             # Calculate size of the logo in pixels
             logo_max_size = int(qr_width * (logo_size_pct / 100.0))
@@ -225,25 +288,14 @@ def generate_qr_code(
             pos_x = (qr_width - processed_width) // 2
             pos_y = (qr_height - processed_height) // 2
             
-            # Paste with alpha channel mask
+            # Convert base QR image to RGBA if not already (for blending logo transparency)
             qr_img = qr_img.convert("RGBA")
             qr_img.paste(logo_processed, (pos_x, pos_y), mask=logo_processed)
-            qr_img = qr_img.convert("RGB")
             
         except Exception as e:
-            print(f"Error processing logo in generation: {e}")
+            # Re-raise the error so the app receives it
+            raise ValueError(f"Failed to process and embed logo: {str(e)}")
             
-    # Handle transparent background if requested
-    if transparent_background:
-        qr_img = qr_img.convert("RGBA")
-        datas = qr_img.getdata()
-        newData = []
-        for item in datas:
-            # If the pixel matches the background color exactly
-            if item[0:3] == back_rgb:
-                newData.append((0, 0, 0, 0))
-            else:
-                newData.append(item)
-        qr_img.putdata(newData)
-        
+    # Return the final image (retaining RGBA/RGB mode without forced conversion to RGB)
     return qr_img
+

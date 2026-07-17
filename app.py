@@ -19,7 +19,9 @@ def generate():
         # Retrieve form data
         url = request.form.get('url', '').strip()
         if not url:
-            return jsonify({'success': False, 'error': 'URL cannot be empty.'}), 400
+            response = jsonify({'success': False, 'message': 'URL cannot be empty.'})
+            response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            return response, 400
             
         fill_color = request.form.get('fill_color', '#000000')
         back_color = request.form.get('back_color', '#FFFFFF')
@@ -41,14 +43,20 @@ def generate():
         
         gradient_type = request.form.get('gradient_type', 'solid')
         gradient_color = request.form.get('gradient_color', '#3B82F6')
+        preset = request.form.get('preset', 'custom')
         
         # Check if logo file is uploaded
         logo_file = None
         if 'logo' in request.files:
             file = request.files['logo']
             if file.filename != '':
-                # Read the file directly into a BytesIO stream
-                logo_file = io.BytesIO(file.read())
+                # Read the file and validate size (2MB max)
+                file_data = file.read()
+                if len(file_data) > 2 * 1024 * 1024:
+                    response = jsonify({'success': False, 'message': 'Uploaded logo exceeds the 2MB size limit.'})
+                    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+                    return response, 400
+                logo_file = io.BytesIO(file_data)
                 
         # Generate the QR Code
         qr_img = generate_qr_code(
@@ -70,42 +78,54 @@ def generate():
             gradient_color=gradient_color
         )
         
-        # Resize image to the exact requested output size
-        # Preserve transparency mode (RGBA or RGB)
-        is_rgba = transparent_background or qr_img.mode == "RGBA"
-        
-        if not is_rgba:
-            # If JPEG/RGB, ensure we paste onto a solid background in case we had transparency
-            if qr_img.mode == "RGBA":
-                back_rgb = hex_to_rgb(back_color)
-                background = Image.new("RGB", qr_img.size, back_rgb)
-                background.paste(qr_img, mask=qr_img.split()[3])
-                qr_img = background
-            else:
-                qr_img = qr_img.convert("RGB")
-        
         # Perform premium scale using Lanczos interpolation
         qr_img = qr_img.resize((target_size, target_size), Image.Resampling.LANCZOS)
             
-        # Save to buffer
+        # Save to buffer as PNG (always PNG)
         img_buffer = io.BytesIO()
-        mime_type = "image/png" if is_rgba else "image/jpeg"
-        qr_img.save(img_buffer, format="PNG" if is_rgba else "JPEG")
+        qr_img.save(img_buffer, format="PNG")
         img_buffer.seek(0)
         
         # Convert to base64
         base64_data = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
         
-        return jsonify({
-            'success': True,
-            'qr_data_url': f"data:{mime_type};base64,{base64_data}"
-        })
+        # Determine descriptive filename
+        if preset and preset != 'custom':
+            filename = f"{preset}_qr.png"
+        else:
+            try:
+                from urllib.parse import urlparse
+                domain = urlparse(url).netloc.replace('www.', '').split('.')[0]
+                if not domain:
+                    domain = "qr_code"
+                filename = f"{domain}_qr.png"
+            except Exception:
+                filename = "qr_code.png"
         
+        response = jsonify({
+            'success': True,
+            'image': base64_data,
+            'qr_data_url': f"data:image/png;base64,{base64_data}",
+            'filename': filename,
+            'mime': 'image/png'
+        })
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        return response
+        
+    except ValueError as ve:
+        response = jsonify({'success': False, 'message': str(ve)})
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        return response, 400
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': str(e)}), 500
+        response = jsonify({'success': False, 'message': f"Server error during generation: {str(e)}"})
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        return response, 500
 
 if __name__ == '__main__':
-    # Running local server on port 5000
-    app.run(debug=True, port=5000)
+    # Render passes the PORT via environment variable; fall back to 5000 locally.
+    # Must bind to 0.0.0.0 so Render can reach the service from the outside.
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV', 'production') != 'production'
+    app.run(host='0.0.0.0', port=port, debug=debug)

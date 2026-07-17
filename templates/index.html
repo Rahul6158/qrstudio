@@ -20,11 +20,16 @@
     <div class="blob blob-3"></div>
 
     <div class="app-container">
+        <!-- Floating Theme Toggle in Top-Right Corner -->
+        <button type="button" id="theme-toggle" class="theme-toggle-btn" title="Toggle Theme" aria-label="Toggle light and dark themes">
+            <i class="fa-solid fa-moon"></i>
+        </button>
+
         <!-- Header -->
         <header class="app-header">
             <div class="logo-area">
                 <i class="fa-solid fa-qrcode qr-logo-icon"></i>
-                <h1>QR Studio</h1>
+                <h1 id="app-title">QR Studio</h1>
             </div>
             <p>Design premium, scan-safe branded QR codes instantly</p>
         </header>
@@ -216,47 +221,53 @@
                         </div>
                     </div>
 
-                    <!-- Generate Button -->
-                    <button type="submit" id="generate-btn" class="primary-btn">
-                        <span>Generate QR Code</span>
-                        <i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden"></i>
-                    </button>
+                    <!-- Action Buttons Row -->
+                    <div class="form-actions-row">
+                        <button type="submit" id="generate-btn" class="primary-btn" aria-label="Generate QR Code">
+                            <span>Generate QR Code</span>
+                            <i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" id="reset-btn" class="secondary-btn" title="Reset all settings to default" aria-label="Reset form settings">
+                            <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i> Reset
+                        </button>
+                    </div>
                 </form>
             </section>
 
             <!-- Right Side: Preview & Download -->
-            <section class="preview-panel glass-card">
+            <section class="preview-panel glass-card" aria-labelledby="preview-heading">
                 <div class="preview-header">
-                    <h2>Live Preview</h2>
-                    <span class="badge">Dynamic</span>
+                    <h2 id="preview-heading">Live Preview</h2>
+                    <span class="badge" aria-label="Dynamic preview status">Dynamic</span>
                 </div>
 
                 <!-- Preview Area -->
-                <div class="preview-box">
+                <div class="preview-box" aria-live="polite">
                     <div id="preview-placeholder" class="placeholder-state">
-                        <i class="fa-solid fa-qrcode bg-qr-icon"></i>
-                        <p>Fill out the target URL on the left and click generate to design your QR code</p>
+                        <i class="fa-solid fa-qrcode bg-qr-icon" aria-hidden="true"></i>
+                        <p class="placeholder-title">No QR Generated</p>
+                        <p>Enter a target URL on the left or choose a brand preset to design your custom QR code.</p>
                     </div>
 
                     <div id="preview-image-container" class="image-state hidden">
                         <!-- Final QR Image -->
-                        <img id="qr-preview-img" src="" alt="Generated QR Code">
+                        <img id="qr-preview-img" src="" alt="Generated QR Code Preview">
                     </div>
 
                     <!-- Floating Loader -->
-                    <div id="preview-loader" class="loader-overlay hidden">
+                    <div id="preview-loader" class="loader-overlay hidden" role="progressbar" aria-valuetext="Generating QR Code">
                         <div class="spinner-core"></div>
-                        <p>Generating design...</p>
+                        <p class="loader-text">Generating QR...</p>
                     </div>
                 </div>
 
                 <!-- Action Controls -->
                 <div id="action-controls" class="action-buttons-group disabled-state">
-                    <button type="button" id="download-png-btn" class="action-btn download-btn">
-                        <i class="fa-solid fa-download"></i> Download PNG
+                    <button type="button" id="download-png-btn" class="action-btn download-btn" aria-label="Download QR code as PNG image">
+                        <i class="fa-solid fa-download" aria-hidden="true"></i> Download PNG
                     </button>
-                    <button type="button" id="copy-img-btn" class="action-btn copy-btn">
-                        <i class="fa-solid fa-copy"></i> Copy Image
+                    <button type="button" id="copy-img-btn" class="action-btn copy-btn" aria-label="Copy QR code image to clipboard">
+                        <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy Image
                     </button>
                 </div>
             </section>
