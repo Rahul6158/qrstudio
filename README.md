@@ -34,21 +34,26 @@ A visually stunning, feature-rich Flask web application to design and export cus
 ## 🚀 Installation & Setup
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/qr-studio.git
 cd qr-studio
 ```
 
 ### 2. Install dependencies
+
 Ensure Python is installed, then run:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. Run the application
+
 ```bash
 python app.py
 ```
+
 Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
 ---
