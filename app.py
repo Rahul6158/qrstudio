@@ -23,6 +23,12 @@ def generate():
             response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
             return response, 400
             
+        # Auto-prepend scheme if missing
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        if not parsed.scheme and ('.' in url or 'localhost' in url) and ' ' not in url:
+            url = "http://" + url
+            
         fill_color = request.form.get('fill_color', '#000000')
         back_color = request.form.get('back_color', '#FFFFFF')
         module_style = request.form.get('module_style', 'classic')

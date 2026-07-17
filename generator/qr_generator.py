@@ -181,8 +181,16 @@ def generate_qr_code(
     if not url or not url.strip():
         raise ValueError("URL cannot be empty.")
         
+    url = url.strip()
     from urllib.parse import urlparse
     parsed = urlparse(url)
+    
+    # Auto-prepend scheme if missing
+    if not parsed.scheme:
+        if ('.' in url or 'localhost' in url) and ' ' not in url:
+            url = "http://" + url
+            parsed = urlparse(url)
+            
     if not parsed.scheme or not parsed.netloc:
         raise ValueError("Invalid target URL. Make sure it starts with http:// or https://")
         

@@ -847,6 +847,15 @@ input[type="range"]::-webkit-slider-thumb:hover {
     backdrop-filter: blur(10px);
     z-index: 9999;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: max-content;
+    max-width: calc(100% - 2rem);
+    box-sizing: border-box;
+}
+
+.toast-notification span {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 .toast-notification.error {
@@ -1161,16 +1170,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
     /* Toast: prevent overflow on narrow screens */
     .toast-notification {
-        width: calc(100% - 2rem);
-        left: 1rem;
-        right: 1rem;
-        transform: translateY(0);
         border-radius: 14px;
         bottom: 1rem;
-    }
-
-    .toast-notification.hidden {
-        transform: translateY(100px);
+        padding: 0.85rem 1.25rem;
     }
 }
 

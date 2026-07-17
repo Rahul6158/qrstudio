@@ -11,7 +11,7 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.4">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}?v=1.3">
 </head>
@@ -40,7 +40,7 @@
         <main class="workspace">
             <!-- Left Side: Configurator -->
             <section class="configurator-panel glass-card">
-                <form id="qr-form" enctype="multipart/form-data">
+                <form id="qr-form" enctype="multipart/form-data" novalidate>
                     
                     <!-- Section: URL Input -->
                     <div class="form-group url-group">
