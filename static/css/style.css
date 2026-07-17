@@ -123,8 +123,11 @@ body {
 
 .qr-logo-icon {
     height: 3.2rem;
-    width: auto;
+    width: 4.69rem;
+    aspect-ratio: 1.466;
     object-fit: contain;
+    display: block;
+    flex-shrink: 0;
     filter: drop-shadow(0 0 12px var(--primary-glow));
     transition: filter 0.3s ease, transform 0.3s ease;
     border-radius: 8px;
@@ -1133,6 +1136,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
     .qr-logo-icon {
         height: 2.1rem;
+        width: 3.08rem;
     }
 
     .glass-card {
@@ -1268,6 +1272,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
     .qr-logo-icon {
         height: 1.8rem;
+        width: 2.64rem;
     }
 
     .app-header p {
@@ -1345,6 +1350,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
     .qr-logo-icon {
         height: 1.6rem;
+        width: 2.35rem;
     }
 
     .glass-card {
