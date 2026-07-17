@@ -110,8 +110,23 @@ body {
 
 /* Header Styling */
 .app-header {
-    text-align: center;
     margin-bottom: 0.5rem;
+}
+
+/* Header top row: logo centered, toggle button on the right */
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.header-row .theme-toggle-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .logo-area {
@@ -151,6 +166,7 @@ body {
     font-size: 1.1rem;
     color: var(--text-secondary);
     font-weight: 400;
+    text-align: center;
 }
 
 /* Glassmorphism Panel styles */
@@ -885,26 +901,26 @@ input[type="range"]::-webkit-slider-thumb:hover {
     100% { opacity: 1; }
 }
 
-/* Floating Theme Toggle — fixed so it never overflows on any screen size */
+/* Theme Toggle Button — sits inside .header-row as an absolutely positioned sibling */
 .theme-toggle-btn {
-    position: fixed;
-    top: 1.25rem;
-    right: 1.25rem;
+    position: relative;
+    flex-shrink: 0;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--card-border);
     border-radius: 50%;
     width: 44px;
     height: 44px;
+    min-width: 44px;
     color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     transition: var(--transition-smooth);
     outline: none;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-    z-index: 1000;
+    z-index: 10;
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
