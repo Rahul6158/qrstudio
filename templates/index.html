@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Studio - Create Beautiful Branded QR Codes</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background Animated Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-qrcode qr-logo-icon"></i>
+                <h1>QR Studio</h1>
+            </div>
+            <p>Design premium, scan-safe branded QR codes instantly</p>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Left Side: Configurator -->
+            <section class="configurator-panel glass-card">
+                <form id="qr-form" enctype="multipart/form-data">
+                    
+                    <!-- Section: URL Input -->
+                    <div class="form-group url-group">
+                        <label for="url"><i class="fa-solid fa-link"></i> Target URL</label>
+                        <input type="url" id="url" name="url" placeholder="https://example.com/your-profile" required autocomplete="off">
+                    </div>
+
+                    <!-- Section: Presets -->
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-wand-magic-sparkles"></i> Brand Presets</label>
+                        <div class="preset-buttons">
+                            <button type="button" class="preset-btn" data-preset="portfolio">
+                                <i class="fa-solid fa-user-tie"></i> Portfolio
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="linkedin">
+                                <i class="fa-brands fa-linkedin"></i> LinkedIn
+                            </button>
+                            <button type="button" class="preset-btn" data-preset="github">
+                                <i class="fa-brands fa-github"></i> GitHub
+                            </button>
+                            <button type="button" class="preset-btn active" data-preset="custom">
+                                <i class="fa-solid fa-sliders"></i> Custom
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Section: Color Customization -->
+                    <div class="form-group colors-container">
+                        <div class="color-control">
+                            <label for="fill_color">Foreground</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="fill_color" name="fill_color" value="#1A1A1A">
+                                <span class="hex-label">#1A1A1A</span>
+                            </div>
+                        </div>
+
+                        <div class="color-control">
+                            <label for="back_color">Background</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="back_color" name="back_color" value="#FFFFFF">
+                                <span class="hex-label">#FFFFFF</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Gradient Configuration -->
+                    <div class="form-group">
+                        <label for="gradient_type"><i class="fa-solid fa-palette"></i> Color Styling Mode</label>
+                        <select id="gradient_type" name="gradient_type">
+                            <option value="solid" selected>Solid Color</option>
+                            <option value="linear_horizontal">Linear Horizontal Gradient</option>
+                            <option value="linear_vertical">Linear Vertical Gradient</option>
+                            <option value="radial">Radial Gradient</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group gradient-color-group hidden">
+                        <label for="gradient_color">Gradient End Color</label>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="gradient_color" name="gradient_color" value="#2563EB">
+                            <span class="hex-label">#2563EB</span>
+                        </div>
+                    </div>
+
+                    <!-- Section: Logo Upload & Design -->
+                    <div class="form-group logo-group">
+                        <label><i class="fa-solid fa-image"></i> Center Logo</label>
+                        
+                        <!-- Drag and Drop Zone -->
+                        <div id="drop-zone" class="drag-drop-zone">
+                            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                            <p class="drop-text">Drag & drop your logo here, or <span class="browse-link">browse</span></p>
+                            <p class="drop-subtext">Supports PNG, JPG, JPEG, WEBP (Max 2MB)</p>
+                            <input type="file" id="logo" name="logo" accept="image/*" class="file-input-hidden">
+                        </div>
+
+                        <!-- Logo Controls (Hidden by default, shown after file loaded) -->
+                        <div id="logo-preview-container" class="logo-preview-box hidden">
+                            <div class="logo-thumbnail-wrapper">
+                                <img id="logo-thumbnail" src="#" alt="Logo Preview">
+                                <button type="button" id="remove-logo-btn" title="Remove logo"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            
+                            <div class="logo-settings">
+                                <div class="setting-item">
+                                    <label for="logo_shape">Logo Shape</label>
+                                    <select id="logo_shape" name="logo_shape">
+                                        <option value="circle" selected>Circle</option>
+                                        <option value="rounded_square">Rounded Square</option>
+                                        <option value="square">Square</option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item">
+                                    <label for="logo_size">Logo Size (% of QR): <span id="logo-size-val">20%</span></label>
+                                    <input type="range" id="logo_size" name="logo_size" min="10" max="30" value="20" step="1">
+                                </div>
+
+                                <div class="checkbox-row">
+                                    <label class="toggle-checkbox">
+                                        <input type="checkbox" id="logo_border" name="logo_border" value="true" checked>
+                                        <span class="checkbox-label">White Border</span>
+                                    </label>
+                                    <label class="toggle-checkbox">
+                                        <input type="checkbox" id="logo_shadow" name="logo_shadow" value="true" checked>
+                                        <span class="checkbox-label">Drop Shadow</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Advanced QR Parameters -->
+                    <div class="form-accordion">
+                        <button type="button" class="accordion-toggle">
+                            <span><i class="fa-solid fa-sliders"></i> Advanced QR Settings</span>
+                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                        </button>
+                        
+                        <div class="accordion-content">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="module_style">Module Style</label>
+                                    <select id="module_style" name="module_style">
+                                        <option value="classic" selected>Classic Square</option>
+                                        <option value="rounded">Rounded Modules</option>
+                                        <option value="circle">Dots / Circles</option>
+                                        <option value="gapped_square">Gapped Square</option>
+                                        <option value="diamond">Diamonds</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="eye_style">Eye Frame Style</label>
+                                    <select id="eye_style" name="eye_style">
+                                        <option value="classic" selected>Classic Square</option>
+                                        <option value="rounded">Rounded Square</option>
+                                        <option value="circle">Circles</option>
+                                        <option value="modern">Modern Border</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label for="error_correction">Error Correction</label>
+                                    <select id="error_correction" name="error_correction">
+                                        <option value="L">Level L (7% recovery)</option>
+                                        <option value="M">Level M (15% recovery)</option>
+                                        <option value="Q">Level Q (25% recovery)</option>
+                                        <option value="H" selected>Level H (30% recovery - Recommended)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="output_size">Output Size</label>
+                                    <select id="output_size" name="output_size">
+                                        <option value="512">512 px x 512 px</option>
+                                        <option value="768" selected>768 px x 768 px</option>
+                                        <option value="1024">1024 px x 1024 px</option>
+                                        <option value="1500">1500 px x 1500 px</option>
+                                        <option value="2000">2000 px x 2000 px</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid-2 align-center">
+                                <div class="form-group">
+                                    <label for="border_size">Margin Border: <span id="border-size-val">4</span></label>
+                                    <input type="range" id="border_size" name="border_size" min="0" max="10" value="4">
+                                </div>
+
+                                <div class="form-group mt-1">
+                                    <label class="toggle-checkbox">
+                                        <input type="checkbox" id="transparent_background" name="transparent_background" value="true">
+                                        <span class="checkbox-label">Transparent Background (PNG)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button type="submit" id="generate-btn" class="primary-btn">
+                        <span>Generate QR Code</span>
+                        <i class="fa-solid fa-circle-notch fa-spin btn-spinner hidden"></i>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Side: Preview & Download -->
+            <section class="preview-panel glass-card">
+                <div class="preview-header">
+                    <h2>Live Preview</h2>
+                    <span class="badge">Dynamic</span>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="preview-box">
+                    <div id="preview-placeholder" class="placeholder-state">
+                        <i class="fa-solid fa-qrcode bg-qr-icon"></i>
+                        <p>Fill out the target URL on the left and click generate to design your QR code</p>
+                    </div>
+
+                    <div id="preview-image-container" class="image-state hidden">
+                        <!-- Final QR Image -->
+                        <img id="qr-preview-img" src="" alt="Generated QR Code">
+                    </div>
+
+                    <!-- Floating Loader -->
+                    <div id="preview-loader" class="loader-overlay hidden">
+                        <div class="spinner-core"></div>
+                        <p>Generating design...</p>
+                    </div>
+                </div>
+
+                <!-- Action Controls -->
+                <div id="action-controls" class="action-buttons-group disabled-state">
+                    <button type="button" id="download-png-btn" class="action-btn download-btn">
+                        <i class="fa-solid fa-download"></i> Download PNG
+                    </button>
+                    <button type="button" id="copy-img-btn" class="action-btn copy-btn">
+                        <i class="fa-solid fa-copy"></i> Copy Image
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast-notification hidden">
+        <i class="fa-solid fa-circle-check toast-icon"></i>
+        <span id="toast-message">Action completed successfully</span>
+    </div>
+
+    <!-- Custom Script -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

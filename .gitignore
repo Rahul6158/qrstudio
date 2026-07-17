@@ -1,0 +1,30 @@
+# Ignore large media files
+*.mp3
+002 Number Game_part_003_clips/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+.env
+
+# QR Studio outputs and temp folders
+qrcodes/
+uploads/
+
+# IDE files
+.vscode/
+.idea/
+.project
+.pydevproject
+
+# System & OS Files
+.DS_Store
+Thumbs.db
