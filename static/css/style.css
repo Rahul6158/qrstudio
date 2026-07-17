@@ -169,7 +169,7 @@ body {
     align-items: start;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
     .workspace {
         grid-template-columns: 1fr;
     }
@@ -234,7 +234,7 @@ select option {
     gap: 0.6rem;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 960px) {
     .preset-buttons {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -584,7 +584,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     gap: 1.25rem;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 640px) {
     .grid-2 {
         grid-template-columns: 1fr;
         gap: 0.5rem;
@@ -864,11 +864,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
     100% { opacity: 1; }
 }
 
-/* Floating Theme Toggle in Top-Right Corner */
+/* Floating Theme Toggle — fixed so it never overflows on any screen size */
 .theme-toggle-btn {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--card-border);
     border-radius: 50%;
@@ -883,7 +883,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
     transition: var(--transition-smooth);
     outline: none;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-    z-index: 100;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .theme-toggle-btn:hover {
@@ -1067,4 +1069,300 @@ input[type="range"]::-webkit-slider-thumb:hover {
 :root[data-theme="light"] select option {
     background-color: #FFFFFF;
     color: #1F2937;
+}
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* ── Tablet ─ 960px and below ──────────────────────────────── */
+@media (max-width: 960px) {
+    body {
+        padding: 1.5rem 1rem;
+        align-items: flex-start;
+    }
+
+    .app-container {
+        gap: 1.5rem;
+    }
+
+    .app-header {
+        padding-top: 0.5rem;
+    }
+
+    .app-header h1 {
+        font-size: 2rem;
+    }
+
+    .app-header p {
+        font-size: 1rem;
+    }
+
+    .glass-card {
+        padding: 1.5rem;
+    }
+
+    /* Preview panel: remove sticky on single-column layout */
+    .preview-panel {
+        position: static;
+        top: auto;
+    }
+
+    /* Preview box: constrain height so it doesn't balloon */
+    .preview-box {
+        max-height: 420px;
+    }
+}
+
+/* ── Large Mobile ─ 768px and below ───────────────────────── */
+@media (max-width: 768px) {
+    body {
+        padding: 1.25rem 0.75rem;
+    }
+
+    .app-header h1 {
+        font-size: 1.85rem;
+        letter-spacing: -0.02em;
+    }
+
+    .qr-logo-icon {
+        font-size: 1.9rem;
+    }
+
+    .glass-card {
+        padding: 1.25rem;
+        border-radius: 16px;
+    }
+
+    .configurator-panel {
+        gap: 1.25rem;
+    }
+
+    /* Colors grid: always 2 cols, they're compact enough */
+    .colors-container {
+        gap: 1rem;
+    }
+
+    /* Action buttons */
+    .action-buttons-group {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    /* Toast: prevent overflow on narrow screens */
+    .toast-notification {
+        width: calc(100% - 2rem);
+        left: 1rem;
+        right: 1rem;
+        transform: translateY(0);
+        border-radius: 14px;
+        bottom: 1rem;
+    }
+
+    .toast-notification.hidden {
+        transform: translateY(100px);
+    }
+}
+
+/* ── Medium Mobile ─ 640px and below ──────────────────────── */
+@media (max-width: 640px) {
+    body {
+        padding: 1rem 0.625rem;
+    }
+
+    .logo-area {
+        gap: 0.5rem;
+    }
+
+    .app-header h1 {
+        font-size: 1.65rem;
+    }
+
+    .app-header p {
+        font-size: 0.9rem;
+    }
+
+    .glass-card {
+        padding: 1rem;
+        border-radius: 14px;
+    }
+
+    /* Colors container stacks on 640 */
+    .colors-container {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    /* Preset buttons already collapse to 2-col at 960, keep it */
+
+    /* Form action row: stack vertically */
+    .form-actions-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .form-actions-row .primary-btn,
+    .form-actions-row .secondary-btn {
+        flex: none;
+        width: 100%;
+    }
+
+    /* Download + Copy: full width stack */
+    .action-buttons-group {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    /* Preview box height cap */
+    .preview-box {
+        max-height: 320px;
+    }
+
+    /* Accordion grid: always single col */
+    .accordion-content .grid-2 {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    /* Checkbox row: wrap */
+    .checkbox-row {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* Logo preview box: stack vertically */
+    .logo-preview-box {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .logo-thumbnail-wrapper {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto;
+    }
+
+    /* Drag drop zone: reduce padding */
+    .drag-drop-zone {
+        padding: 1.25rem;
+    }
+
+    /* Section labels */
+    .form-group label {
+        font-size: 0.9rem;
+    }
+}
+
+/* ── Small Mobile ─ 480px and below ───────────────────────── */
+@media (max-width: 480px) {
+    .app-header h1 {
+        font-size: 1.45rem;
+    }
+
+    .qr-logo-icon {
+        font-size: 1.6rem;
+    }
+
+    .app-header p {
+        font-size: 0.85rem;
+    }
+
+    .glass-card {
+        padding: 0.875rem;
+        border-radius: 12px;
+    }
+
+    /* Preset buttons: still 2-col but smaller padding */
+    .preset-btn {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.82rem;
+    }
+
+    /* Primary button */
+    .primary-btn {
+        font-size: 1rem;
+        padding: 0.95rem;
+    }
+
+    /* Action buttons */
+    .action-btn {
+        font-size: 0.9rem;
+        padding: 0.8rem;
+    }
+
+    /* Theme toggle: slightly smaller */
+    .theme-toggle-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+
+    /* bg QR icon smaller */
+    .bg-qr-icon {
+        font-size: 4.5rem;
+    }
+
+    /* Placeholder text */
+    .placeholder-state p {
+        font-size: 0.85rem;
+    }
+
+    /* Preview box height cap */
+    .preview-box {
+        max-height: 280px;
+    }
+
+    /* Accordion toggle */
+    .accordion-toggle {
+        font-size: 0.9rem;
+    }
+
+    /* Badge */
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+    }
+}
+
+/* ── Tiny Mobile ─ 360px and below ────────────────────────── */
+@media (max-width: 360px) {
+    body {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .app-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .qr-logo-icon {
+        font-size: 1.4rem;
+    }
+
+    .glass-card {
+        padding: 0.75rem;
+    }
+
+    /* Blob decorations: hide to improve perf on tiny screens */
+    .blob {
+        display: none;
+    }
+
+    /* Stack preset buttons to 1-col as absolute last resort */
+    .preset-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .preset-btn {
+        font-size: 0.78rem;
+        padding: 0.55rem 0.3rem;
+    }
+
+    .theme-toggle-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+    }
 }
