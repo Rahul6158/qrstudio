@@ -11,7 +11,7 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom Style Sheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.5">
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}?v=1.3">
 </head>
@@ -114,7 +114,7 @@
                             <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
                             <p class="drop-text">Drag & drop your logo here, or <span class="browse-link">browse</span></p>
                             <p class="drop-subtext">Supports PNG, JPG, JPEG, WEBP (Max 2MB)</p>
-                            <input type="file" id="logo" name="logo" accept="image/*" class="file-input-hidden">
+                            <input type="file" id="logo" name="logo" accept="image/*" class="file-input-hidden" aria-label="Upload center logo image">
                         </div>
 
                         <!-- Logo Controls (Hidden by default, shown after file loaded) -->
@@ -257,7 +257,7 @@
                     </div>
 
                     <!-- Floating Loader -->
-                    <div id="preview-loader" class="loader-overlay hidden" role="progressbar" aria-valuetext="Generating QR Code">
+                    <div id="preview-loader" class="loader-overlay hidden" role="progressbar" aria-label="Generating QR Code" aria-valuetext="Generating QR Code">
                         <div class="spinner-core"></div>
                         <p class="loader-text">Generating QR...</p>
                     </div>
