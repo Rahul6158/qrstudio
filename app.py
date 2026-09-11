@@ -13,8 +13,12 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 def index():
     return render_template('index.html')
 
+@app.get('/health')
+def health():
+    return jsonify({'success': True, 'message': 'Health check passed.'})
+
 @app.route('/generate', methods=['POST'])
-def generate():
+def generate(): 
     try:
         # Retrieve form data
         url = request.form.get('url', '').strip()
