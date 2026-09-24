@@ -6,8 +6,9 @@ from PIL import Image
 from generator.qr_generator import generate_qr_code, hex_to_rgb
 
 app = Flask(__name__)
-# Enable maximum upload size (e.g. 16MB)
+# Enable maximum upload size (e.g. 16MB) and auto-reload templates
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 @app.route('/')
 def index():
@@ -137,5 +138,5 @@ if __name__ == '__main__':
     # Render passes the PORT via environment variable; fall back to 5000 locally.
     # Must bind to 0.0.0.0 so Render can reach the service from the outside.
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_ENV', 'production') != 'production'
+    debug = os.environ.get('FLASK_ENV') != 'production'
     app.run(host='0.0.0.0', port=port, debug=debug)
